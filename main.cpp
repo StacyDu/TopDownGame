@@ -3,6 +3,7 @@
 #include "Character.h"
 #include "Prop.h"
 #include "Enemy.h"
+#include <string>
 
 int main () {
 
@@ -23,7 +24,26 @@ int main () {
         Prop{Vector2{400.f, 500.f}, LoadTexture("nature_tileset/Log.png")},
     };
 
-    Enemy goblin(Vector2{}, LoadTexture("characters/goblin_idle_spritesheet.png"), LoadTexture("characters/goblin_run_spritesheet.png"));
+    Enemy goblin{
+        Vector2{800.f, 300.f}, 
+        LoadTexture("characters/goblin_idle_spritesheet.png"), 
+        LoadTexture("characters/goblin_run_spritesheet.png")
+    };
+
+    Enemy slime{
+        Vector2{500.f, 700.f},
+        LoadTexture("characters/slime_idle_spritesheet.png"), 
+        LoadTexture("characters/slime_run_spritesheet.png")
+    };
+    Enemy* enemies[]{
+        &goblin,
+        &slime
+    };
+
+    for (auto enemy : enemies)
+    {
+        enemy->setTarget(&knight);
+    }
 
     SetTargetFPS(60);
     while (!WindowShouldClose())
@@ -40,6 +60,20 @@ int main () {
         for (auto prop : props)
         {
             prop.Render(knight.getWorldPos());
+        }
+
+        if (!knight.getAlive()) // is not alive
+        {
+            DrawText("Game Over!", 55.f, 45.f, 40, RED);
+            EndDrawing();
+            continue;
+        }
+        else // is alive
+        {
+            std::string knightsHealth = "Health: ";
+            knightsHealth.append(std::to_string(knight.getHealth()), 0, 4);
+            
+            DrawText(knightsHealth.c_str(), 55.f, 45.f, 40, RED);
         }
 
         knight.tick(GetFrameTime());
@@ -60,7 +94,21 @@ int main () {
             };
         }       
 
-        goblin.tick(GetFrameTime());
+        for (auto enemy : enemies)
+        {
+            enemy->tick(GetFrameTime());
+        }
+
+        if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+        {
+            for (auto enemy : enemies)
+            {
+                if (CheckCollisionRecs(enemy->getCollisionRec(), knight.getWeaponCollision()))
+                {
+                    enemy->setAlive(false);
+                } 
+            }
+        }
 
         EndDrawing();
     }

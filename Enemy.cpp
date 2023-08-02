@@ -1,16 +1,16 @@
 #include "Enemy.h"
 #include "raymath.h"
 
-Enemy::Enemy(Vector2 pos, Texture2D idle_texture, Texture2D run_texture)
+Enemy::Enemy(Vector2 pos, Texture2D idle_texture, Texture2D run_texture, float enemySpeed)
 {
     worldPos = pos;
     texture = idle_texture;
     idle = idle_texture;
     run = run_texture;
-    
+    speed = enemySpeed;
+
     width = texture.width/maxFrames;
     height = texture.height;
-    speed = 3.5f;
 }
 
 void Enemy::tick(float deltaTime)
@@ -22,7 +22,7 @@ void Enemy::tick(float deltaTime)
     BaseCharacter::tick(deltaTime);
     if (CheckCollisionRecs(target->getCollisionRec(), getCollisionRec()))
     {
-        target->takeDamage(damagePerSec * deltaTime);
+        target->takeDamage(damagePerSec * deltaTime); 
     }
 }
 

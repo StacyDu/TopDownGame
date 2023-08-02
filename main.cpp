@@ -4,6 +4,7 @@
 #include "Prop.h"
 #include "Enemy.h"
 #include <string>
+#include <algorithm>
 
 int main () {
 
@@ -25,19 +26,29 @@ int main () {
     };
 
     Enemy goblin{
-        Vector2{800.f, 300.f}, 
+        Vector2{900.f, 400.f}, 
         LoadTexture("characters/goblin_idle_spritesheet.png"), 
-        LoadTexture("characters/goblin_run_spritesheet.png")
+        LoadTexture("characters/goblin_run_spritesheet.png"),
+        2.0f
+    };
+
+    Enemy goblin2{
+    Vector2{900.f, 800.f}, 
+    LoadTexture("characters/goblin_idle_spritesheet.png"), 
+    LoadTexture("characters/goblin_run_spritesheet.png"),
+    2.0f
     };
 
     Enemy slime{
         Vector2{500.f, 700.f},
         LoadTexture("characters/slime_idle_spritesheet.png"), 
-        LoadTexture("characters/slime_run_spritesheet.png")
+        LoadTexture("characters/slime_run_spritesheet.png"),
+        1.5f
     };
     Enemy* enemies[]{
         &goblin,
-        &slime
+        &slime,
+        &goblin2
     };
 
     for (auto enemy : enemies)
@@ -62,19 +73,39 @@ int main () {
             prop.Render(knight.getWorldPos());
         }
 
+        // print amount of alive enemies
+        int enemiesAlive{};
+        for (auto enemy : enemies)
+        {
+            enemy->tick(GetFrameTime());
+            if (enemy->getAlive())
+            {
+                enemiesAlive++;
+            }
+        }
+        std::string numberOfEnemies = "Enemies left: ";
+        numberOfEnemies.append(std::to_string(enemiesAlive));
+        DrawText(numberOfEnemies.c_str(), 10.f, 10.f, 20, RED); 
+
         if (!knight.getAlive()) // is not alive
         {
             DrawText("Game Over!", 55.f, 45.f, 40, RED);
             EndDrawing();
             continue;
         }
-        else // is alive
+        else if (!enemiesAlive)
+        {
+            DrawText("You won!", knight.getScreenPos().x, knight.getScreenPos().y, 40, GREEN);
+            EndDrawing();
+            continue;
+        }
+        else // knight is alive
         {
             std::string knightsHealth = "Health: ";
             knightsHealth.append(std::to_string(knight.getHealth()), 0, 4);
             
             DrawText(knightsHealth.c_str(), 55.f, 45.f, 40, RED);
-        }
+        }      
 
         knight.tick(GetFrameTime());
         // check map bouncess
@@ -93,12 +124,7 @@ int main () {
                 knight.undoMovement();
             };
         }       
-
-        for (auto enemy : enemies)
-        {
-            enemy->tick(GetFrameTime());
-        }
-
+  
         if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
             for (auto enemy : enemies)
